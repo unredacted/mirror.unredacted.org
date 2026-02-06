@@ -41,6 +41,17 @@ sync_rsync() {
         >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
+sync_rsync_ssl() {
+    local name="$1" source="$2" extra_args="$3"
+    local dest="$MIRROR_ROOT/$name/"
+    mkdir -p "$dest"
+
+    log "RSYNC-SSL | $name | $source -> $dest"
+    # shellcheck disable=SC2086
+    rsync-ssl --recursive --copy-links --delete --times --perms --timeout=600 $extra_args "$source" "$dest" \
+        >> "$LOG_DIR/${name//\//-}.log" 2>&1
+}
+
 sync_wget() {
     local name="$1" source="$2" extra_args="$3"
     local dest="$MIRROR_ROOT/$name/"
@@ -83,6 +94,12 @@ while IFS='|' read -r name method source extra_args; do
     case "$method" in
         rsync)
             sync_rsync "$name" "$source" "$extra_args" &
+            PIDS+=($!)
+            NAMES+=("$name")
+            log "START  | $name | PID $!"
+            ;;
+        rsync-ssl)
+            sync_rsync_ssl "$name" "$source" "$extra_args" &
             PIDS+=($!)
             NAMES+=("$name")
             log "START  | $name | PID $!"

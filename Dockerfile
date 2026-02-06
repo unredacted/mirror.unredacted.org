@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     wget \
     bash \
     dcron \
-    tzdata
+    tzdata \
+    stunnel
 
 # ── Set timezone (adjust as needed) ─────────────────────────────────────────
 ENV TZ=UTC
