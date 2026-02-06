@@ -27,6 +27,6 @@ RUN echo "0 * * * * flock -n /var/run/lock/mirror-sync /usr/local/bin/sync-mirro
 # ── Volume for mirror data (persists across redeploys) ───────────────────────
 VOLUME ["/data/mirror"]
 
-EXPOSE 80
+EXPOSE 3080
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

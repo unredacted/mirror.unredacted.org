@@ -11,7 +11,7 @@ services:
       - TZ=UTC
       - MIRROR_ROOT=/data/mirror
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3080/health"]
       interval: 60s
       timeout: 10s
       retries: 3
