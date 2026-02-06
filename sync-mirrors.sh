@@ -8,12 +8,27 @@ MIRROR_ROOT="${MIRROR_ROOT:-/data/mirror}"
 CONFIG_FILE="${CONFIG_FILE:-/etc/mirror/mirrors.conf}"
 LOG_DIR="/var/log/mirror"
 MAX_RANDOM_DELAY="${MAX_RANDOM_DELAY:-2400}"
+MIN_DISK_MB="${MIN_DISK_MB:-5000}"
 
 mkdir -p "$MIRROR_ROOT" "$LOG_DIR"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
+
+# ── Housekeeping ─────────────────────────────────────────────────────────────
+
+# Truncate logs over 10MB
+find "$LOG_DIR" -name "*.log" -size +10M -exec truncate -s 0 {} \;
+
+# Check available disk space
+AVAILABLE=$(df -m "$MIRROR_ROOT" | awk 'NR==2 {print $4}')
+if [[ "$AVAILABLE" -lt "$MIN_DISK_MB" ]]; then
+    log "ERROR: Only ${AVAILABLE}MB free on $MIRROR_ROOT (minimum: ${MIN_DISK_MB}MB), skipping sync"
+    exit 1
+fi
+
+# ── Sync functions ───────────────────────────────────────────────────────────
 
 sync_rsync() {
     local name="$1" source="$2" extra_args="$3"
