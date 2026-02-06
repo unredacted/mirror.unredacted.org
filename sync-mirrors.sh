@@ -67,7 +67,8 @@ DELAY=$(shuf -i 0-"$MAX_RANDOM_DELAY" -n 1)
 log "========== Mirror sync started (delay: ${DELAY}s) =========="
 sleep "$DELAY"
 
-FAIL_COUNT=0
+PIDS=()
+NAMES=()
 
 while IFS='|' read -r name method source extra_args; do
     # Skip comments and blank lines
@@ -81,16 +82,16 @@ while IFS='|' read -r name method source extra_args; do
 
     case "$method" in
         rsync)
-            sync_rsync "$name" "$source" "$extra_args" || {
-                log "FAIL   | $name | rsync exited with $?"
-                ((FAIL_COUNT++))
-            }
+            sync_rsync "$name" "$source" "$extra_args" &
+            PIDS+=($!)
+            NAMES+=("$name")
+            log "START  | $name | PID $!"
             ;;
         wget)
-            sync_wget "$name" "$source" "$extra_args" || {
-                log "FAIL   | $name | wget exited with $?"
-                ((FAIL_COUNT++))
-            }
+            sync_wget "$name" "$source" "$extra_args" &
+            PIDS+=($!)
+            NAMES+=("$name")
+            log "START  | $name | PID $!"
             ;;
         *)
             log "SKIP   | $name | Unknown method: $method"
@@ -98,6 +99,17 @@ while IFS='|' read -r name method source extra_args; do
     esac
 
 done < "$CONFIG_FILE"
+
+# Wait for all syncs to finish
+FAIL_COUNT=0
+for i in "${!PIDS[@]}"; do
+    if wait "${PIDS[$i]}"; then
+        log "DONE   | ${NAMES[$i]} | success"
+    else
+        log "FAIL   | ${NAMES[$i]} | exited with $?"
+        ((FAIL_COUNT++))
+    fi
+done
 
 # Write a timestamp for the health check / status page
 date -u '+%Y-%m-%dT%H:%M:%SZ' > "$MIRROR_ROOT/.last-sync"
