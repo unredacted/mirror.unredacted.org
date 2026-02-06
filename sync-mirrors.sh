@@ -19,7 +19,7 @@ log() {
 # ── Housekeeping ─────────────────────────────────────────────────────────────
 
 # Truncate logs over 10MB
-find "$LOG_DIR" -name "*.log" -size +10M -exec truncate -s 0 {} \;
+find "$LOG_DIR" -name "*.log" -size +10485760c -exec truncate -s 0 {} \;
 
 # Check available disk space
 AVAILABLE=$(df -m "$MIRROR_ROOT" | awk 'NR==2 {print $4}')
