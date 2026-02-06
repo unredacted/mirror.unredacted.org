@@ -1,0 +1,32 @@
+FROM caddy:2-alpine
+
+# ── Install sync tools ──────────────────────────────────────────────────────
+RUN apk add --no-cache \
+    rsync \
+    wget \
+    bash \
+    dcron \
+    tzdata
+
+# ── Set timezone (adjust as needed) ─────────────────────────────────────────
+ENV TZ=UTC
+
+# ── Copy configuration ──────────────────────────────────────────────────────
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY mirrors.conf /etc/mirror/mirrors.conf
+
+# ── Copy scripts ─────────────────────────────────────────────────────────────
+COPY scripts/sync-mirrors.sh /usr/local/bin/sync-mirrors.sh
+COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/sync-mirrors.sh /usr/local/bin/entrypoint.sh
+
+# ── Cron: sync every 6 hours ────────────────────────────────────────────────
+RUN echo "0 */6 * * * /usr/local/bin/sync-mirrors.sh >> /var/log/mirror/cron.log 2>&1" \
+    | crontab -
+
+# ── Volume for mirror data (persists across redeploys) ───────────────────────
+VOLUME ["/data/mirror"]
+
+EXPOSE 3080
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

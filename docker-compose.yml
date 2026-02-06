@@ -1,0 +1,22 @@
+services:
+  mirror:
+    build: .
+    container_name: mirror-server
+    restart: unless-stopped
+    ports:
+      - "3080:3080"
+    volumes:
+      - mirror-data:/data/mirror
+    environment:
+      - TZ=UTC
+      - MIRROR_ROOT=/data/mirror
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  mirror-data:
+    driver: local

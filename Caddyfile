@@ -1,0 +1,41 @@
+# ============================================================================
+# Caddyfile — Mirror file server
+# ============================================================================
+# Another webserver handles TLS/reverse proxy, so we just listen on :3080.
+# If you want Caddy to handle TLS directly, replace :3080 with your domain.
+# ============================================================================
+
+{
+    admin off
+}
+
+:3080 {
+    root * /data/mirror
+
+    file_server browse
+
+    # Compression for metadata files, package lists, etc.
+    encode zstd gzip
+
+    # Tell search engines not to index the mirror
+    header {
+        X-Robots-Tag "noindex, nofollow"
+        X-Mirror "active"
+    }
+
+    # Health check endpoint for Coolify
+    handle /health {
+        respond "ok" 200
+    }
+
+    # Serve sync status
+    handle /status {
+        rewrite * /.last-sync
+        file_server
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}
