@@ -23,6 +23,9 @@
         X-Mirror "active"
     }
 
+    # Tor website uses absolute /dist/ links; redirect to /tor/dist/
+    redir /dist/* /tor{uri} permanent
+
     # Health check endpoint for Coolify
     handle /health {
         respond "ok" 200
