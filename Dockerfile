@@ -16,8 +16,8 @@ COPY Caddyfile /etc/caddy/Caddyfile
 COPY mirrors.conf /etc/mirror/mirrors.conf
 
 # ── Copy scripts ─────────────────────────────────────────────────────────────
-COPY scripts/sync-mirrors.sh /usr/local/bin/sync-mirrors.sh
-COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY sync-mirrors.sh /usr/local/bin/sync-mirrors.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/sync-mirrors.sh /usr/local/bin/entrypoint.sh
 
 # ── Cron: sync every hour ────────────────────────────────────────────────

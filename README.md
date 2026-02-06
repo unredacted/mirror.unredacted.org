@@ -31,10 +31,9 @@ Comment out a line with `#` to disable it. Push your changes to redeploy.
 ├── Caddyfile            # Caddy web server configuration
 ├── Dockerfile           # Container image definition
 ├── docker-compose.yml   # Compose file for deployment
+├── entrypoint.sh        # Container startup (cron + caddy)
 ├── mirrors.conf         # Mirror list (edit this)
-└── scripts/
-    ├── entrypoint.sh    # Container startup (cron + caddy)
-    └── sync-mirrors.sh  # Sync engine (reads mirrors.conf)
+└── sync-mirrors.sh      # Sync engine (reads mirrors.conf)
 ```
 
 ## Endpoints
@@ -61,6 +60,6 @@ docker exec mirror-server /usr/local/bin/sync-mirrors.sh
 
 ## Notes
 
-- Mirrors sync every 6 hours by default. Change the cron schedule in the Dockerfile.
+- Mirrors sync every hour by default with a random delay (up to 40 minutes) to avoid overwhelming upstreams. Change the cron schedule in the Dockerfile.
 - Verify upstream rsync/wget URLs before your first sync, as endpoints can change.
 - Make sure you have enough disk space. Mirror sizes vary but can be large (tens of GB each).
