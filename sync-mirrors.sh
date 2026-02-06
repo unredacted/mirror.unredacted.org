@@ -22,7 +22,7 @@ sync_rsync() {
 
     log "RSYNC  | $name | $source -> $dest"
     # shellcheck disable=SC2086
-    rsync -rt --delete --timeout=600 $extra_args "$source" "$dest" \
+    rsync -rLt --delete --timeout=600 $extra_args "$source" "$dest" \
         >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
