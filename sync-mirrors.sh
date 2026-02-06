@@ -7,6 +7,7 @@ set -euo pipefail
 MIRROR_ROOT="${MIRROR_ROOT:-/data/mirror}"
 CONFIG_FILE="${CONFIG_FILE:-/etc/mirror/mirrors.conf}"
 LOG_DIR="/var/log/mirror"
+MAX_RANDOM_DELAY="${MAX_RANDOM_DELAY:-2400}"
 
 mkdir -p "$MIRROR_ROOT" "$LOG_DIR"
 
@@ -21,8 +22,8 @@ sync_rsync() {
 
     log "RSYNC  | $name | $source -> $dest"
     # shellcheck disable=SC2086
-    rsync -avz --delete --timeout=600 $extra_args "$source" "$dest" \
-        >> "$LOG_DIR/$name.log" 2>&1
+    rsync -rt --delete --timeout=600 $extra_args "$source" "$dest" \
+        >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
 sync_wget() {
@@ -35,7 +36,7 @@ sync_wget() {
     wget --directory-prefix="$dest" --no-host-directories --cut-dirs=1 \
         --timestamping --continue --retry-connrefused --waitretry=10 \
         $extra_args "$source" \
-        >> "$LOG_DIR/$name.log" 2>&1
+        >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
 # ── Main ────────────────────────────────────────────────────────────────────
@@ -45,7 +46,11 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     exit 1
 fi
 
-log "========== Mirror sync started =========="
+# Random delay (0 to MAX_RANDOM_DELAY seconds) to avoid thundering herd
+# and satisfy Tails' requirement for jittered sync times
+DELAY=$(shuf -i 0-"$MAX_RANDOM_DELAY" -n 1)
+log "========== Mirror sync started (delay: ${DELAY}s) =========="
+sleep "$DELAY"
 
 FAIL_COUNT=0
 

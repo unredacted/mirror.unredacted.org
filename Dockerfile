@@ -20,13 +20,13 @@ COPY scripts/sync-mirrors.sh /usr/local/bin/sync-mirrors.sh
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/sync-mirrors.sh /usr/local/bin/entrypoint.sh
 
-# ── Cron: sync every 6 hours ────────────────────────────────────────────────
-RUN echo "0 */6 * * * /usr/local/bin/sync-mirrors.sh >> /var/log/mirror/cron.log 2>&1" \
+# ── Cron: sync every hour ────────────────────────────────────────────────
+RUN echo "0 * * * * flock -n /var/run/lock/mirror-sync /usr/local/bin/sync-mirrors.sh >> /var/log/mirror/cron.log 2>&1" \
     | crontab -
 
 # ── Volume for mirror data (persists across redeploys) ───────────────────────
 VOLUME ["/data/mirror"]
 
-EXPOSE 3080
+EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
