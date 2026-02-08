@@ -7,7 +7,13 @@ RUN apk add --no-cache \
     bash \
     dcron \
     tzdata \
-    stunnel
+    stunnel \
+    git \
+    perl
+
+# ── Install Debian ftpsync (archvsync) ──────────────────────────────────
+RUN git clone --depth=1 https://salsa.debian.org/mirror-team/archvsync.git /opt/ftpsync \
+    && chmod +x /opt/ftpsync/bin/*
 
 # ── Set timezone (adjust as needed) ─────────────────────────────────────────
 ENV TZ=UTC
@@ -15,6 +21,7 @@ ENV TZ=UTC
 # ── Copy configuration ──────────────────────────────────────────────────────
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY mirrors.conf /etc/mirror/mirrors.conf
+COPY ftpsync.conf /etc/ftpsync/ftpsync.conf
 
 # ── Copy scripts ─────────────────────────────────────────────────────────────
 COPY sync-mirrors.sh /usr/local/bin/sync-mirrors.sh

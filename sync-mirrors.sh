@@ -37,7 +37,7 @@ sync_rsync() {
 
     log "RSYNC  | $name | $source -> $dest"
     # shellcheck disable=SC2086
-    rsync -rLt --delete --timeout=600 $extra_args "$source" "$dest" \
+    rsync -rlptH --delete-delay --delay-updates --timeout=600 $extra_args "$source" "$dest" \
         >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
@@ -48,7 +48,7 @@ sync_rsync_ssl() {
 
     log "RSYNC-SSL | $name | $source -> $dest"
     # shellcheck disable=SC2086
-    rsync-ssl --recursive --copy-links --delete --times --perms --timeout=600 $extra_args "$source" "$dest" \
+    rsync-ssl --recursive --perms --times --hard-links --delete-delay --delay-updates --timeout=600 $extra_args "$source" "$dest" \
         >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
@@ -62,6 +62,18 @@ sync_wget() {
     wget --directory-prefix="$dest" --no-host-directories --cut-dirs=1 \
         --timestamping --continue --retry-connrefused --waitretry=10 \
         $extra_args "$source" \
+        >> "$LOG_DIR/${name//\//-}.log" 2>&1
+}
+
+sync_ftpsync() {
+    local name="$1"
+    local config="/etc/ftpsync/ftpsync.conf"
+    local dest="$MIRROR_ROOT/$name/"
+    mkdir -p "$dest"
+
+    log "FTPSYNC | $name | config=$config -> $dest"
+    # ftpsync expects HOME to contain etc/ftpsync.conf and log/
+    HOME=/etc BASEDIR=/opt/ftpsync /opt/ftpsync/bin/ftpsync \
         >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
 
@@ -106,6 +118,12 @@ while IFS='|' read -r name method source extra_args; do
             ;;
         wget)
             sync_wget "$name" "$source" "$extra_args" &
+            PIDS+=($!)
+            NAMES+=("$name")
+            log "START  | $name | PID $!"
+            ;;
+        ftpsync)
+            sync_ftpsync "$name" &
             PIDS+=($!)
             NAMES+=("$name")
             log "START  | $name | PID $!"

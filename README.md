@@ -62,4 +62,4 @@ docker exec mirror-server /usr/local/bin/sync-mirrors.sh
 
 - Mirrors sync every hour by default with a random delay (up to 40 minutes) to avoid overwhelming upstreams. Change the cron schedule in the Dockerfile.
 - Verify upstream rsync/wget URLs before your first sync, as endpoints can change.
-- Make sure you have enough disk space. Mirror sizes vary but can be large (tens of GB each).
+- Current mirrors require approximately **8 TB** of disk space total. The largest mirrors are Debian (~1.7 TB), Ubuntu (~2.6 TB), and Rocky Linux (~2 TB).
