@@ -73,6 +73,8 @@ sync_ftpsync() {
 
     log "FTPSYNC | $name | config=$config -> $dest"
     # ftpsync expects HOME to contain etc/ftpsync.conf and log/
+    # LOGNAME must be set (Alpine Docker doesn't set it)
+    export LOGNAME="${LOGNAME:-root}"
     HOME=/etc BASEDIR=/opt/ftpsync /opt/ftpsync/bin/ftpsync \
         >> "$LOG_DIR/${name//\//-}.log" 2>&1
 }
